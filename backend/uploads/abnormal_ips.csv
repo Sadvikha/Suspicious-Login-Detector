@@ -1,0 +1,6 @@
+timestamp,username,ip,status,hour,country,abnormal_country
+2024-07-26 14:35:21,user1,8.8.8.8,FAILED,14,United States,True
+2024-07-26 14:36:21,user1,8.8.8.8,FAILED,14,United States,True
+2024-07-26 14:37:21,user1,8.8.8.8,FAILED,14,United States,True
+2024-07-26 02:15:00,user1,8.8.8.8,SUCCESS,2,United States,True
+2024-07-26 09:15:00,user2,1.1.1.1,SUCCESS,9,,True
