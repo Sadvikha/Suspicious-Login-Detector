@@ -6,6 +6,44 @@ export default function SuspiciousLoginDetector() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailToSend, setEmailToSend] = useState("");
+  const [emailStatus, setEmailStatus] = useState(null);
+
+const handleSendEmail = async () => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(emailToSend)) {
+    setEmailStatus("❌ Enter a valid email address");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ to: emailToSend }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setEmailStatus("✅ Email sent successfully!");
+
+      setTimeout(() => {
+        setShowEmailModal(false);
+        setEmailToSend("");
+        setEmailStatus(null);
+      }, 2000);
+    } else {
+      setEmailStatus("❌ " + (data.error || "Failed to send email"));
+    }
+  } catch {
+    setEmailStatus("❌ Server error. Try again.");
+  }
+};
+
+
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -106,7 +144,7 @@ export default function SuspiciousLoginDetector() {
               Real-time Threat Detection
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Suspicious Login Detection<br />for Staff Users
+              Suspicious Login Detection
             </h1>
             <p className="text-xl text-blue-100 mb-8 leading-relaxed">
               Ensuring the security of staff accounts is critical for the smooth functioning of any Learning Management System. 
@@ -513,13 +551,26 @@ export default function SuspiciousLoginDetector() {
                 <h3 className="text-3xl font-bold text-gray-900 mb-2">Analysis Results</h3>
                 <p className="text-gray-600">Comprehensive security threat assessment</p>
               </div>
-              <button
-                onClick={handleDownload}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-all"
-              >
-                <Download className="w-5 h-5" />
-                Download Report
-              </button>
+              <div className="flex items-center gap-4">
+  {/* SEND EMAIL BUTTON (BLUE) */}
+  <button
+    onClick={() => setShowEmailModal(true)}
+    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-all"
+  >
+    <Mail className="w-5 h-5" />
+    Send Email
+  </button>
+
+  {/* DOWNLOAD REPORT BUTTON */}
+  <button
+    onClick={handleDownload}
+    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-all"
+  >
+    <Download className="w-5 h-5" />
+    Download Report
+  </button>
+</div>
+
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
@@ -762,6 +813,151 @@ export default function SuspiciousLoginDetector() {
                 <li><a href="#" className="hover:text-white">Contact</a></li>
               </ul>
             </div>
+            {/* ---------------- EMAIL MODAL ---------------- */}
+{showEmailModal && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-8 shadow-2xl w-full max-w-md relative animate-fade-in">
+
+      {/* Close Button (top right) */}
+      <button
+        className="absolute right-4 top-4 text-gray-500 hover:text-gray-700 text-xl font-bold"
+        onClick={() => {
+          setShowEmailModal(false);
+          setEmailToSend("");
+          setEmailStatus(null);
+        }}
+      >
+        ×
+      </button>
+
+      {/* Title */}
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        Send Report via Email
+      </h2>
+
+      <p className="text-gray-600 text-sm mb-4">
+        Enter the email address you want to send the security report to.
+      </p>
+
+      {/* EMAIL INPUT */}
+      <input
+        type="text"
+        placeholder="example@domain.com"
+        value={emailToSend}
+        onChange={(e) => {
+          setEmailToSend(e.target.value);
+          setEmailStatus(null);
+        }}
+        className="w-full px-4 py-3 border rounded-xl bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 mb-3"
+      />
+
+      {/* STATUS MESSAGE */}
+      {emailStatus && (
+        <p
+          className={`text-sm font-semibold text-center mb-3 flex items-center justify-center gap-2
+            ${emailStatus.type === "success" ? "text-green-600" : "text-red-600"}`}
+        >
+          {emailStatus.icon} {emailStatus.msg}
+        </p>
+      )}
+
+      {/* BUTTONS */}
+      <div className="flex items-center justify-end gap-3 mt-4">
+
+        {/* Cancel */}
+        <button
+          className="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+          onClick={() => {
+            setShowEmailModal(false);
+            setEmailStatus(null);
+            setEmailToSend("");
+          }}
+        >
+          Cancel
+        </button>
+
+        {/* SEND EMAIL */}
+        <button
+          onClick={async () => {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            // Validate Email
+            if (!emailToSend) {
+              setEmailStatus({
+                type: "error",
+                icon: "❌",
+                msg: "Email is required."
+              });
+              return;
+            }
+
+            if (!emailRegex.test(emailToSend)) {
+              setEmailStatus({
+                type: "error",
+                icon: "❌",
+                msg: "Enter a valid email address."
+              });
+              return;
+            }
+
+            // Loading State
+            setEmailStatus({
+              type: "loading",
+              icon: "⏳",
+              msg: "Sending email..."
+            });
+
+            try {
+              const res = await fetch("http://127.0.0.1:5000/send-email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: emailToSend })
+              });
+
+              const data = await res.json();
+
+              if (res.ok) {
+                setEmailStatus({
+                  type: "success",
+                  icon: "✅",
+                  msg: "Email sent successfully!"
+                });
+
+                // Auto-close after 2 sec
+                setTimeout(() => {
+                  setShowEmailModal(false);
+                  setEmailStatus(null);
+                  setEmailToSend("");
+                }, 2000);
+              } else {
+                setEmailStatus({
+                  type: "error",
+                  icon: "❌",
+                  msg: data.error || "Server error. Try again."
+                });
+              }
+
+            } catch (err) {
+              setEmailStatus({
+                type: "error",
+                icon: "❌",
+                msg: "Backend unreachable."
+              });
+            }
+          }}
+          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
+        >
+          Send Email
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
+
           </div>
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
             <p>© 2024 SecureLogin. Built with Python Flask + React. All rights reserved.</p>
