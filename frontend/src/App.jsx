@@ -10,40 +10,41 @@ export default function SuspiciousLoginDetector() {
   const [emailToSend, setEmailToSend] = useState("");
   const [emailStatus, setEmailStatus] = useState(null);
 
-const handleSendEmail = async () => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // NEW: API modal state (non-email, just UI)
+  const [showApiModal, setShowApiModal] = useState(false);
 
-  if (!emailRegex.test(emailToSend)) {
-    setEmailStatus("❌ Enter a valid email address");
-    return;
-  }
+  const handleSendEmail = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  try {
-    const res = await fetch("http://127.0.0.1:5000/send-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ to: emailToSend }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      setEmailStatus("✅ Email sent successfully!");
-
-      setTimeout(() => {
-        setShowEmailModal(false);
-        setEmailToSend("");
-        setEmailStatus(null);
-      }, 2000);
-    } else {
-      setEmailStatus("❌ " + (data.error || "Failed to send email"));
+    if (!emailRegex.test(emailToSend)) {
+      setEmailStatus("❌ Enter a valid email address");
+      return;
     }
-  } catch {
-    setEmailStatus("❌ Server error. Try again.");
-  }
-};
 
+    try {
+      const res = await fetch("http://127.0.0.1:5000/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: emailToSend }),
+      });
 
+      const data = await res.json();
+
+      if (res.ok) {
+        setEmailStatus("✅ Email sent successfully!");
+
+        setTimeout(() => {
+          setShowEmailModal(false);
+          setEmailToSend("");
+          setEmailStatus(null);
+        }, 7000);
+      } else {
+        setEmailStatus("❌ " + (data.error || "Failed to send email"));
+      }
+    } catch {
+      setEmailStatus("❌ Server error. Try again.");
+    }
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -104,6 +105,14 @@ const handleSendEmail = async () => {
     }
   };
 
+  // Scroll helper
+  const scrollToId = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Top Navigation Bar */}
@@ -116,13 +125,31 @@ const handleSendEmail = async () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">SecureLogin</h1>
-                <p className="text-xs text-gray-500">Security Intelligence Platform</p>
+                <p className="text-xs text-gray-500">Login Security Analyzer</p>
               </div>
             </div>
             <div className="flex items-center gap-6">
-              <button className="text-gray-600 hover:text-gray-900 font-medium">Documentation</button>
-              <button className="text-gray-600 hover:text-gray-900 font-medium">API</button>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
+              {/* wired to scroll to How It Works */}
+              <button
+                onClick={() => scrollToId('documentation')}
+                className="text-gray-600 hover:text-gray-900 font-medium"
+              >
+                Documentation
+              </button>
+
+              {/* opens an API modal - suggestion for API info / usage */}
+              <button
+                onClick={() => setShowApiModal(true)}
+                className="text-gray-600 hover:text-gray-900 font-medium"
+              >
+                API
+              </button>
+
+              {/* wired to scroll to Try It Yourself */}
+              <button
+                onClick={() => scrollToId('get-started')}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
+              >
                 Get Started
               </button>
             </div>
@@ -147,8 +174,8 @@ const handleSendEmail = async () => {
               Suspicious Login Detection
             </h1>
             <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-              Ensuring the security of staff accounts is critical for the smooth functioning of any Learning Management System. 
-              Our advanced AI-powered system monitors and flags unusual login activities to prevent potential security breaches in real-time.
+              Ensuring secure access is essential for any organization. 
+              Our system monitors login activity, detects unusual or suspicious patterns, and helps organizations identify potential security risks and take action to protect their environment.
             </p>
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-lg text-white">
@@ -167,14 +194,14 @@ const handleSendEmail = async () => {
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 1440 90" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#F8FAFC"/>
           </svg>
         </div>
       </div>
 
       {/* How It Works Section */}
-      <div className="max-w-7xl mx-auto px-6 py-20">
+      <div id="documentation" className="max-w-7xl mx-auto px-6 py-20">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
             <TrendingUp className="w-4 h-4" />
@@ -182,13 +209,13 @@ const handleSendEmail = async () => {
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">How Suspicious Login Detection Works</h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Our system automatically tracks and analyzes login activities based on several conditions to identify potential threats.
+           By analyzing your uploaded login CSV, the system identifies unusual patterns such as new locations, new devices, irregular login times, failed attempts, and unfamiliar IPs to help organizations detect potential threats.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Detection Method 1 */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all group">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 transition-all duration-300 transform group hover:shadow-2xl hover:-translate-y-3 hover:scale-105">
             <div className="relative mb-6">
               <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
               <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center">
@@ -200,7 +227,7 @@ const handleSendEmail = async () => {
               <h3 className="text-xl font-bold text-gray-900">New Location</h3>
             </div>
             <p className="text-gray-600 leading-relaxed">
-              If a staff user logs in from a location that they haven't used in their recent 15 logins, it is flagged as suspicious.
+              Flags logins coming from a location that doesn’t match the user’s recent login history.
             </p>
             <div className="mt-6 pt-6 border-t border-gray-100">
               <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
@@ -211,8 +238,7 @@ const handleSendEmail = async () => {
           </div>
 
           {/* Detection Method 2 */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all group">
-            <div className="relative mb-6">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 transition-all duration-300 transform group hover:shadow-2xl hover:-translate-y-3 hover:scale-105"> <div className="relative mb-6">
               <div className="absolute -inset-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
               <div className="relative bg-gradient-to-br from-purple-500 to-pink-600 w-16 h-16 rounded-2xl flex items-center justify-center">
                 <Smartphone className="w-8 h-8 text-white" />
@@ -223,7 +249,7 @@ const handleSendEmail = async () => {
               <h3 className="text-xl font-bold text-gray-900">New Device</h3>
             </div>
             <p className="text-gray-600 leading-relaxed">
-              When a staff user logs in from a device not used in their past 15 logins, the system detects it as suspicious activity.
+              Identifies logins from devices the user hasn’t previously used in the uploaded records.
             </p>
             <div className="mt-6 pt-6 border-t border-gray-100">
               <div className="flex items-center gap-2 text-sm text-purple-600 font-medium">
@@ -234,8 +260,7 @@ const handleSendEmail = async () => {
           </div>
 
           {/* Detection Method 3 */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all group">
-            <div className="relative mb-6">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 transition-all duration-300 transform group hover:shadow-2xl hover:-translate-y-3 hover:scale-105"> <div className="relative mb-6">
               <div className="absolute -inset-2 bg-gradient-to-r from-red-600 to-orange-600 rounded-full blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
               <div className="relative bg-gradient-to-br from-red-500 to-orange-600 w-16 h-16 rounded-2xl flex items-center justify-center">
                 <Zap className="w-8 h-8 text-white" />
@@ -246,7 +271,7 @@ const handleSendEmail = async () => {
               <h3 className="text-xl font-bold text-gray-900">Rapid Logins</h3>
             </div>
             <p className="text-gray-600 leading-relaxed">
-              If a staff user logs in more than 3 times within an hour, this behavior is considered unusual and flagged accordingly.
+              Highlights users who log in multiple times within a short time window, indicating unusual activity.
             </p>
             <div className="mt-6 pt-6 border-t border-gray-100">
               <div className="flex items-center gap-2 text-sm text-red-600 font-medium">
@@ -257,8 +282,7 @@ const handleSendEmail = async () => {
           </div>
 
           {/* Detection Method 4 */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all group">
-            <div className="relative mb-6">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 transition-all duration-300 transform group hover:shadow-2xl hover:-translate-y-3 hover:scale-105">  <div className="relative mb-6">
               <div className="absolute -inset-2 bg-gradient-to-r from-amber-600 to-yellow-600 rounded-full blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
               <div className="relative bg-gradient-to-br from-amber-500 to-yellow-600 w-16 h-16 rounded-2xl flex items-center justify-center">
                 <Clock className="w-8 h-8 text-white" />
@@ -269,7 +293,7 @@ const handleSendEmail = async () => {
               <h3 className="text-xl font-bold text-gray-900">Unusual Time</h3>
             </div>
             <p className="text-gray-600 leading-relaxed">
-              Login attempts made between 12:00 a.m. and 3:00 a.m. are flagged as suspicious, as they fall outside typical working hours.
+              Login attempts made between 12:00 a.m. and 5:00 a.m. are flagged as suspicious, as they fall outside typical working hours.
             </p>
             <div className="mt-6 pt-6 border-t border-gray-100">
               <div className="flex items-center gap-2 text-sm text-amber-600 font-medium">
@@ -280,8 +304,7 @@ const handleSendEmail = async () => {
           </div>
 
           {/* Detection Method 5 */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all group">
-            <div className="relative mb-6">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 transition-all duration-300 transform group hover:shadow-2xl hover:-translate-y-3 hover:scale-105">  <div className="relative mb-6">
               <div className="absolute -inset-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
               <div className="relative bg-gradient-to-br from-green-500 to-emerald-600 w-16 h-16 rounded-2xl flex items-center justify-center">
                 <Activity className="w-8 h-8 text-white" />
@@ -292,7 +315,7 @@ const handleSendEmail = async () => {
               <h3 className="text-xl font-bold text-gray-900">Smart Threshold</h3>
             </div>
             <p className="text-gray-600 leading-relaxed">
-              To avoid false positives for new users, the system applies suspicious login detection only after a staff user has logged in at least 3 times.
+              To avoid false positives, the system checks for suspicious logins only after a user has enough login history, preventing unnecessary alerts.
             </p>
             <div className="mt-6 pt-6 border-t border-gray-100">
               <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
@@ -303,7 +326,7 @@ const handleSendEmail = async () => {
           </div>
 
           {/* Stats Card */}
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-8 shadow-lg text-white">
+          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-8 shadow-lg text-white transition-all transform group hover:scale-105 group-hover:-translate-y-2">
             <Shield className="w-12 h-12 mb-4 opacity-80" />
             <h3 className="text-3xl font-bold mb-2">99.8%</h3>
             <p className="text-indigo-200 mb-6">Detection Accuracy Rate</p>
@@ -425,7 +448,7 @@ const handleSendEmail = async () => {
       </div>
 
       {/* Try It Yourself Section */}
-      <div className="max-w-7xl mx-auto px-6 py-20">
+      <div id="get-started" className="max-w-7xl mx-auto px-6 py-20">
         <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl overflow-hidden shadow-2xl">
           <div className="grid md:grid-cols-2 gap-0">
             {/* Left Side - Info */}
@@ -575,7 +598,7 @@ const handleSendEmail = async () => {
 
             <div className="grid md:grid-cols-3 gap-6">
               {/* Brute Force Card */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 transform hover:shadow-xl hover:-translate-y-3 hover:scale-[1.03]">
                 <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
@@ -622,7 +645,7 @@ const handleSendEmail = async () => {
               </div>
 
               {/* Off Hours Card */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 transform hover:shadow-2xl hover:-translate-y-3 hover:scale-[1.03]">
                 <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
@@ -669,7 +692,7 @@ const handleSendEmail = async () => {
               </div>
 
               {/* Abnormal IPs Card */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 transform hover:shadow-2xl hover:-translate-y-3 hover:scale-[1.03]">
                 <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-6">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
@@ -774,53 +797,158 @@ const handleSendEmail = async () => {
         )}
       </div>
 
+{/* API Modal (Dark Theme) */}
+{showApiModal && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-[#1a1a1f] rounded-2xl p-8 w-full max-w-2xl shadow-2xl border border-gray-700 relative">
+
+      {/* Close Button */}
+      <button
+        onClick={() => setShowApiModal(false)}
+        className="absolute right-4 top-4 text-gray-400 hover:text-gray-200 text-2xl font-bold"
+      >
+        ×
+      </button>
+
+      {/* Title */}
+      <h3 className="text-2xl font-bold text-white mb-1">API Reference</h3>
+      <p className="text-gray-400 text-sm mb-6">Quick guide to the endpoints used by this demo</p>
+
+      {/* API Details */}
+      <div className="space-y-5 text-sm">
+        
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <strong className="text-blue-400">POST /detect</strong>
+          <p className="text-gray-400 text-sm mt-1">
+            Accepts multipart/form-data with key <code className="text-blue-300">logfile</code>.
+          </p>
+        </div>
+
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <strong className="text-green-400">GET /download/report</strong>
+          <p className="text-gray-400 text-sm mt-1">
+            Returns the generated analysis ZIP report.
+          </p>
+        </div>
+
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <strong className="text-pink-400">POST /send-email</strong>
+          <p className="text-gray-400 text-sm mt-1">
+            Sends the security analysis report via email.
+          </p>
+        </div>
+
+      </div>
+
+      {/* Footer Button */}
+      <div className="mt-8 flex justify-end">
+        <button
+          onClick={() => setShowApiModal(false)}
+          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all"
+        >
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+
+
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                  <Shield className="w-5 h-5" />
-                </div>
-                <span className="font-bold text-lg">SecureLogin</span>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Enterprise-grade security monitoring and threat detection platform.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white">Features</a></li>
-                <li><a href="#" className="hover:text-white">Pricing</a></li>
-                <li><a href="#" className="hover:text-white">Security</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white">Documentation</a></li>
-                <li><a href="#" className="hover:text-white">API Reference</a></li>
-                <li><a href="#" className="hover:text-white">Support</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white">About</a></li>
-                <li><a href="#" className="hover:text-white">Blog</a></li>
-                <li><a href="#" className="hover:text-white">Contact</a></li>
-              </ul>
-            </div>
-            {/* ---------------- EMAIL MODAL ---------------- */}
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="grid md:grid-cols-4 gap-8 mb-8">
+
+      {/* Logo */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="bg-blue-600 p-2 rounded-lg">
+            <Shield className="w-5 h-5" />
+          </div>
+          <span className="font-bold text-lg">SecureLogin</span>
+        </div>
+        <p className="text-gray-400 text-sm">
+          Enterprise-grade security monitoring and threat detection platform.
+        </p>
+      </div>
+
+      {/* Product */}
+      <div>
+        <h4 className="font-semibold mb-4">Product</h4>
+        <ul className="space-y-2 text-sm text-gray-400">
+          <li>
+            <button onClick={() => scrollToId('documentation')} className="hover:text-white">
+              Features
+            </button>
+          </li>
+          <li>
+            <button onClick={() => scrollToId('get-started')} className="hover:text-white">
+              Pricing
+            </button>
+          </li>
+          <li>
+            <button onClick={() => scrollToId('documentation')} className="hover:text-white">
+              Security
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      {/* Resources */}
+      <div>
+        <h4 className="font-semibold mb-4">Resources</h4>
+        <ul className="space-y-2 text-sm text-gray-400">
+          <li>
+            <button onClick={() => scrollToId('documentation')} className="hover:text-white">
+              Documentation
+            </button>
+          </li>
+          <li>
+            <button onClick={() => setShowApiModal(true)} className="hover:text-white">
+              API Reference
+            </button>
+          </li>
+          <li>
+            <button onClick={() => scrollToId('get-started')} className="hover:text-white">
+              Support
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      {/* Company */}
+      <div>
+        <h4 className="font-semibold mb-4">Company</h4>
+        <ul className="space-y-2 text-sm text-gray-400">
+          <li>
+            <button onClick={() => scrollToId('documentation')} className="hover:text-white">
+              About
+            </button>
+          </li>
+          <li>
+            <button onClick={() => scrollToId('documentation')} className="hover:text-white">
+              Blog
+            </button>
+          </li>
+          <li>
+            <button onClick={() => scrollToId('get-started')} className="hover:text-white">
+              Contact
+            </button>
+          </li>
+        </ul>
+      </div>
+    
+
+
+{/* ---------------- DARK EMAIL MODAL ---------------- */}
 {showEmailModal && (
   <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white rounded-2xl p-8 shadow-2xl w-full max-w-md relative animate-fade-in">
+    <div className="bg-[#101522] rounded-2xl p-8 shadow-2xl w-full max-w-md relative">
 
-      {/* Close Button (top right) */}
+      {/* Close Button */}
       <button
-        className="absolute right-4 top-4 text-gray-500 hover:text-gray-700 text-xl font-bold"
+        className="absolute right-4 top-4 text-gray-400 hover:text-gray-200 text-xl font-bold"
         onClick={() => {
           setShowEmailModal(false);
           setEmailToSend("");
@@ -831,15 +959,15 @@ const handleSendEmail = async () => {
       </button>
 
       {/* Title */}
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+      <h2 className="text-2xl font-bold text-white mb-2">
         Send Report via Email
       </h2>
 
-      <p className="text-gray-600 text-sm mb-4">
-        Enter the email address you want to send the security report to.
+      <p className="text-gray-300 text-sm mb-6">
+        Enter the email address where you want the security report delivered.
       </p>
 
-      {/* EMAIL INPUT */}
+      {/* EMAIL INPUT (White input, black text) */}
       <input
         type="text"
         placeholder="example@domain.com"
@@ -848,25 +976,25 @@ const handleSendEmail = async () => {
           setEmailToSend(e.target.value);
           setEmailStatus(null);
         }}
-        className="w-full px-4 py-3 border rounded-xl bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 mb-3"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 mb-3"
       />
 
       {/* STATUS MESSAGE */}
       {emailStatus && (
         <p
           className={`text-sm font-semibold text-center mb-3 flex items-center justify-center gap-2
-            ${emailStatus.type === "success" ? "text-green-600" : "text-red-600"}`}
+            ${emailStatus.type === "success" ? "text-green-400" : "text-red-400"}`}
         >
           {emailStatus.icon} {emailStatus.msg}
         </p>
       )}
 
-      {/* BUTTONS */}
-      <div className="flex items-center justify-end gap-3 mt-4">
+      {/* ACTION BUTTONS */}
+      <div className="flex items-center justify-end gap-3 mt-6">
 
         {/* Cancel */}
         <button
-          className="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+          className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 transition"
           onClick={() => {
             setShowEmailModal(false);
             setEmailStatus(null);
@@ -881,7 +1009,6 @@ const handleSendEmail = async () => {
           onClick={async () => {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-            // Validate Email
             if (!emailToSend) {
               setEmailStatus({
                 type: "error",
@@ -900,7 +1027,6 @@ const handleSendEmail = async () => {
               return;
             }
 
-            // Loading State
             setEmailStatus({
               type: "loading",
               icon: "⏳",
@@ -923,12 +1049,12 @@ const handleSendEmail = async () => {
                   msg: "Email sent successfully!"
                 });
 
-                // Auto-close after 2 sec
                 setTimeout(() => {
                   setShowEmailModal(false);
                   setEmailStatus(null);
                   setEmailToSend("");
-                }, 2000);
+                }, 7000);
+
               } else {
                 setEmailStatus({
                   type: "error",
@@ -949,13 +1075,11 @@ const handleSendEmail = async () => {
         >
           Send Email
         </button>
+
       </div>
     </div>
   </div>
 )}
-
-
-
 
 
           </div>
