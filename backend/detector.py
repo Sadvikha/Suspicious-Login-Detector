@@ -1,3 +1,4 @@
+
 import sys
 import pandas as pd
 import geoip2.database
@@ -62,7 +63,7 @@ def detect_off_hours(df):
     off_hours = success[(success["hour"] < 9) | (success["hour"] > 18)]
     return off_hours
 
-def detect_abnormal_ips(df, normal_countries, reader):
+'''def detect_abnormal_ips(df, normal_countries, reader):
     def get_country(ip):
         try:
             response = reader.city(ip)
@@ -75,7 +76,39 @@ def detect_abnormal_ips(df, normal_countries, reader):
         lambda x: x["country"] != normal_countries.get(x["username"], ""),
         axis=1
     )
-    return df[df["abnormal_country"]]
+    return df[df["abnormal_country"]]'''
+def detect_abnormal_ips(df, normal_countries, reader):
+
+    def get_country(ip):
+        try:
+            response = reader.city(ip)
+            return response.country.name
+        except:
+            return "Unknown"
+
+    # Add country column
+    df["country"] = df["ip"].apply(get_country)
+
+    abnormal_rows = []
+
+    # NEW: baseline per username
+    user_baseline = {}
+
+    for _, row in df.iterrows():
+        user = row["username"]
+        country = row["country"]
+
+        # First time seeing the user → store baseline
+        if user not in user_baseline:
+            user_baseline[user] = country
+            continue
+
+        # If country changed → abnormal
+        if country != user_baseline[user]:
+            abnormal_rows.append(row)
+
+    return pd.DataFrame(abnormal_rows)
+
 
 def main():
     if len(sys.argv) != 2:

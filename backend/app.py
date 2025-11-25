@@ -152,6 +152,7 @@ def detect():
         brute = detect_brute_force(df)
         off = detect_off_hours(df)
         abnormal = detect_abnormal_ips(df, {}, reader)
+
     except Exception as e:
         return jsonify({"error": f"Detection failed: {e}"}), 500
 

@@ -209,7 +209,7 @@ export default function SuspiciousLoginDetector() {
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">How Suspicious Login Detection Works</h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-           By analyzing your uploaded login CSV, the system identifies unusual patterns such as new locations, new devices, irregular login times, failed attempts, and unfamiliar IPs to help organizations detect potential threats.
+           By analyzing your uploaded login data, the system identifies unusual patterns such as new locations, new devices, irregular login times, failed attempts, and unfamiliar IPs to help organizations detect potential threats.
           </p>
         </div>
 
