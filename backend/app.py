@@ -189,10 +189,10 @@ def detect():
     }
 
     # send alert if suspicious
-    if len(brute) > 0 or len(off) > 0 or len(abnormal) > 0:
-        send_email_alert(result)
+    #if len(brute) > 0 or len(off) > 0 or len(abnormal) > 0:
+        #send_email_alert(result)
 
-    return jsonify(result)
+    #return jsonify(result)
 
 
 # ================================================================= #
