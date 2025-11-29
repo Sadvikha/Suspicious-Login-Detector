@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Shield, Upload, AlertTriangle, Clock, Globe, MapPin, Smartphone, Activity, Download, CheckCircle, XCircle, Mail, User, Info, Lock, Zap, Eye, TrendingUp, Bell } from 'lucide-react';
 
+const API_BASE = "https://suspicious-login-detector.onrender.com";
+
 export default function SuspiciousLoginDetector() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function SuspiciousLoginDetector() {
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/send-email", {
+      const res = await fetch(`${API_BASE}/send-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ to: emailToSend }),
@@ -70,7 +72,7 @@ export default function SuspiciousLoginDetector() {
     formData.append('logfile', file);
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/detect', {
+      const response = await fetch(`${API_BASE}/detect`, {
         method: 'POST',
         body: formData,
       });
@@ -90,7 +92,7 @@ export default function SuspiciousLoginDetector() {
 
   const handleDownload = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/download/report');
+      const response = await fetch(`${API_BASE}/download/report`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -328,7 +330,7 @@ export default function SuspiciousLoginDetector() {
           {/* Stats Card */}
           <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-8 shadow-lg text-white transition-all transform group hover:scale-105 group-hover:-translate-y-2">
             <Shield className="w-12 h-12 mb-4 opacity-80" />
-            <h3 className="text-3xl font-bold mb-2">99.8%</h3>
+              <h3 className="text-3xl font-bold mb-2">99.8%</h3>
             <p className="text-indigo-200 mb-6">Detection Accuracy Rate</p>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -1034,7 +1036,7 @@ export default function SuspiciousLoginDetector() {
             });
 
             try {
-              const res = await fetch("http://127.0.0.1:5000/send-email", {
+              const res = await fetch(`${API_BASE}/send-email`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: emailToSend })
