@@ -420,4 +420,11 @@ For issues, questions, or feature requests:
 
 ---
 
+---
+
+## ⚠️ Email Alerts 
+
+They are implemented in code but intentionally disabled in the hosted environment for security & server restrictions.
+They can be enabled locally with real SMTP credentials.
+
 **by Sadvikha**
