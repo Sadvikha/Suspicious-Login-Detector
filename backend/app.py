@@ -24,14 +24,19 @@ from detector import load_logs, detect_brute_force, detect_off_hours, detect_abn
     }
 })'''
 app = Flask(__name__)
-CORS(app)
+# Full CORS Support
+CORS(app, support_credentials=True, resources={
+    r"/detect": {"origins": "*", "methods": ["POST", "OPTIONS"], "allow_headers": "*"},
+    r"/download/*": {"origins": "*", "methods": ["GET", "OPTIONS"], "allow_headers": "*"},
+    r"/send-email": {"origins": "*", "methods": ["POST", "OPTIONS"], "allow_headers": "*"},
+    r"/api/*": {"origins": "*"}
+})
 
-@app.after_request
-def apply_cors(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    return response
+@app.route("/detect", methods=["POST", "OPTIONS"])
+def detect():
+    if request.method == "OPTIONS":
+        return jsonify({"status": "CORS OK"}), 200
+
 
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
