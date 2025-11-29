@@ -16,13 +16,13 @@ import geoip2.database
 from detector import load_logs, detect_brute_force, detect_off_hours, detect_abnormal_ips
 
 # ------------------- FIXED ------------------- #
-app = Flask(__name__)
-CORS(app)
-
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-GEOIP_DB = os.path.join(os.path.dirname(__file__), "GeoLite2-City.mmdb")
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # ---------------- EMAIL CONFIG ---------------- #
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
