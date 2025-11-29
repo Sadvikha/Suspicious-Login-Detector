@@ -24,7 +24,8 @@ from detector import load_logs, detect_brute_force, detect_off_hours, detect_abn
     }
 })'''
 app = Flask(__name__)
-CORS(app, supports_credentials=True) 
+# Enable CORS fully for everything
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.after_request
 def apply_cors(response):
@@ -145,8 +146,12 @@ def test():
 # ================================================================= #
 # 4️⃣ DETECT ROUTE
 # ================================================================= #
-@app.route("/detect", methods=["POST"])
+@app.route("/detect", methods=["POST", "OPTIONS"])
 def detect():
+
+    # Handle preflight CORS
+    if request.method == "OPTIONS":
+        return jsonify({"message": "OK"}), 200
 
     if "logfile" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
