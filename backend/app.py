@@ -15,17 +15,10 @@ import geoip2.database
 
 from detector import load_logs, detect_brute_force, detect_off_hours, detect_abnormal_ips
 
-# ------------------- FIXED ------------------- #
-'''CORS(app, resources={
-    r"/*": {
-        "origins": "*",
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})'''
 app = Flask(__name__)
 # Enable CORS fully for everything
 CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 @app.after_request
 def apply_cors(response):
@@ -40,19 +33,19 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 GEOIP_DB = os.path.join(os.path.dirname(__file__), "GeoLite2-City.mmdb")
 
-
 # ---------------- EMAIL CONFIG ---------------- #
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
 
 
-
-# ================================================================= #
+# ======================================================================
 # 1️⃣ AUTO ALERT EMAIL
-# ================================================================= #
-def send_email_alert(results):
+# ======================================================================
+"""
+# REAL IMPLEMENTATION (for local / non-restricted environments)
 
+def send_email_alert(results):
     subject = "⚠ Suspicious Login Activity Detected"
     body = "<h2>Suspicious Login Activity Detected</h2>"
 
@@ -82,11 +75,18 @@ def send_email_alert(results):
         print("📧 Auto-alert email sent!")
     except Exception as e:
         print("❌ Auto-alert email error:", e)
+"""
+# ACTIVE VERSION FOR HOSTING (does nothing, but shows intent)
+def send_email_alert(results):
+    print("📧 Auto-email alert is DISABLED in hosted demo (SMTP blocked).")
 
 
-# ================================================================= #
+# ======================================================================
 # 2️⃣ FRONTEND "SEND EMAIL" BUTTON
-# ================================================================= #
+# ======================================================================
+"""
+# REAL IMPLEMENTATION (for local / non-restricted environments)
+
 @app.route("/send-email", methods=["POST"])
 def send_email_to_user():
     data = request.get_json()
@@ -113,7 +113,7 @@ def send_email_to_user():
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
-    # Attach ZIP (correct method)
+    # Attach ZIP
     with open(zip_path, "rb") as f:
         part = MIMEBase("application", "zip")
         part.set_payload(f.read())
@@ -133,22 +133,30 @@ def send_email_to_user():
     except Exception as e:
         print("❌ Manual email error:", e)
         return jsonify({"error": "Server error. Try again."}), 500
+"""
+
+# ACTIVE VERSION FOR HOSTING
+@app.route("/send-email", methods=["POST"])
+def send_email_to_user():
+    # We intentionally do NOT send email on Render
+    return jsonify({
+        "message": "📧 Email sending is disabled in the hosted demo (SMTP not allowed)."
+    }), 200
 
 
-# ================================================================= #
+# ======================================================================
 # 3️⃣ TEST ROUTE
-# ================================================================= #
+# ======================================================================
 @app.route("/api/test")
 def test():
     return jsonify({"message": "Backend is working!"})
 
 
-# ================================================================= #
+# ======================================================================
 # 4️⃣ DETECT ROUTE
-# ================================================================= #
+# ======================================================================
 @app.route("/detect", methods=["POST", "OPTIONS"])
 def detect():
-
     # Handle preflight CORS
     if request.method == "OPTIONS":
         return jsonify({"message": "OK"}), 200
@@ -174,10 +182,10 @@ def detect():
         brute = detect_brute_force(df)
         off = detect_off_hours(df)
         abnormal = detect_abnormal_ips(df, {}, reader)
-
     except Exception as e:
         return jsonify({"error": f"Detection failed: {e}"}), 500
 
+    # Save CSVs for download
     brute.to_csv(os.path.join(UPLOAD_FOLDER, "brute_force.csv"), index=False)
     off.to_csv(os.path.join(UPLOAD_FOLDER, "off_hours.csv"), index=False)
     abnormal.to_csv(os.path.join(UPLOAD_FOLDER, "abnormal_ips.csv"), index=False)
@@ -188,27 +196,27 @@ def detect():
         "abnormal_ips": abnormal.to_dict(orient="records"),
     }
 
-    # send alert if suspicious
-    #if len(brute) > 0 or len(off) > 0 or len(abnormal) > 0:
-        #send_email_alert(result)
+    # REAL BEHAVIOUR (LOCAL ONLY) – COMMENTED FOR HOSTING:
+    # if len(brute) > 0 or len(off) > 0 or len(abnormal) > 0:
+    #     send_email_alert(result)
 
-    #return jsonify(result)
+    # Hosted demo: only return JSON to frontend
+    return jsonify(result)
 
 
-# ================================================================= #
+# ======================================================================
 # 5️⃣ DOWNLOAD ZIP
-# ================================================================= #
+# ======================================================================
 @app.route("/download/report", methods=["GET"])
 def download_report():
-
     files = ["brute_force.csv", "off_hours.csv", "abnormal_ips.csv", "logins.csv"]
 
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for file in files:
-            fp = os.path.join(UPLOAD_FOLDER, file)
+        for f in files:
+            fp = os.path.join(UPLOAD_FOLDER, f)
             if os.path.exists(fp):
-                zipf.write(fp, arcname=file)
+                zipf.write(fp, arcname=f)
 
     zip_buffer.seek(0)
 
@@ -220,17 +228,16 @@ def download_report():
     )
 
 
-# ================================================================= #
+# ======================================================================
 # 6️⃣ HEALTH CHECK / ROOT ROUTE
-# ================================================================= #
+# ======================================================================
 @app.route("/")
 def home():
     return jsonify({"message": "Suspicious Login Detector API Running!"})
 
 
-# ================================================================= #
-# 7️⃣ RUN APP — FIXED
-# ================================================================= #
+# ======================================================================
+# 7️⃣ RUN APP
+# ======================================================================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
