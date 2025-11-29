@@ -24,7 +24,7 @@ from detector import load_logs, detect_brute_force, detect_off_hours, detect_abn
     }
 })'''
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True) 
 
 @app.after_request
 def apply_cors(response):
