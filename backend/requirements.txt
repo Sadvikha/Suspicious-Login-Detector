@@ -1,0 +1,6 @@
+Flask
+pandas
+gunicorn
+Flask-Cors
+geoip2
+python-dateutil
