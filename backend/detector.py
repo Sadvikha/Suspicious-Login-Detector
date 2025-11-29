@@ -1,4 +1,4 @@
-
+import os
 import sys
 import pandas as pd
 import geoip2.database
@@ -10,9 +10,9 @@ from email.mime.multipart import MIMEMultipart
 # -----------------------
 #  EMAIL CONFIG
 # -----------------------
-SENDER_EMAIL = "suspiciouslogindetector@gmail.com"
-APP_PASSWORD = "udpuwvugaibscjmi"  # <-- your app password WITHOUT spaces
-RECEIVER_EMAIL = "suspiciouslogindetector@gmail.com"
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+APP_PASSWORD = os.getenv("APP_PASSWORD")
+RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
 
 def send_alert_email(subject, message):
     """Send suspicious activity email alert."""
@@ -173,5 +173,5 @@ def main():
     else:
         print("ℹ️ No suspicious activity detected — email not sent.")
 
-if __name__ == "__main__":
-    main()
+'''if __name__ == "__main__":
+    main()'''

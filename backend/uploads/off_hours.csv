@@ -1,3 +1,1 @@
-no,timestamp,username,ip,status,hour
-3,2025-01-15 07:12:52,service_acct,172.31.255.157,SUCCESS,7
-14,2025-01-15 23:21:35,developer,64.18.2.38,SUCCESS,23
+timestamp,username,ip,status,hour

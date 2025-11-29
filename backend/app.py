@@ -25,9 +25,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 GEOIP_DB = os.path.join(os.path.dirname(__file__), "GeoLite2-City.mmdb")
 
 # ---------------- EMAIL CONFIG ---------------- #
-SENDER_EMAIL = "suspiciouslogindetector@gmail.com"
-APP_PASSWORD = "udpu wvug aibs cjmi"
-RECEIVER_EMAIL = "suspiciouslogindetector@gmail.com"
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+APP_PASSWORD = os.getenv("APP_PASSWORD")
+RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
+
 
 
 # ================================================================= #
@@ -199,7 +200,16 @@ def download_report():
 
 
 # ================================================================= #
-# 6️⃣ RUN APP — FIXED
+# 6️⃣ HEALTH CHECK / ROOT ROUTE
+# ================================================================= #
+@app.route("/")
+def home():
+    return jsonify({"message": "Suspicious Login Detector API Running!"})
+
+
+# ================================================================= #
+# 7️⃣ RUN APP — FIXED
 # ================================================================= #
 if __name__ == "__main__":
-    app.run(debug=True, host="127.0.0.1", port=5000)
+    app.run(host="0.0.0.0", port=5000)
+
